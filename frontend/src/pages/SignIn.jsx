@@ -22,7 +22,7 @@ const SignIn = () => {
     dispatch(setLoading());
 
     try {
-      const response = await fetch("http://localhost:5000/api/auth/signin", {
+      const response = await fetch("/backend/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -35,15 +35,18 @@ const SignIn = () => {
       if (!response.ok) {
         throw new Error(data.message || "Sign-in failed");
       }
+      console.log("formdfata",data)
 
       dispatch(setUser(data));
+      console.log("User set in Redux:", data);
 
       // Redirect based on user type
-      if (data.userType === "restaurant") {
-        navigate("/restaurant-dashboard");
-      } else if (data.userType === "ngo") {
-        navigate("/ngo-dashboard");
+      if (data.user.userType === "restaurant") {
+        navigate("/dashboard/restaurant");
+      } else if (data.user.userType === "ngo") {
+        navigate("/dashboard/ngo");
       }
+      
     } catch (err) {
       dispatch(setError(err.message));
     }

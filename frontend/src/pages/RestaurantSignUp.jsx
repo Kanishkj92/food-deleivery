@@ -34,13 +34,14 @@ const RestaurantSignUp = () => {
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
-
+  console.log(formData);
   const handleSubmit = async (e) => {
     e.preventDefault();
-    dispatch(setLoading(true));
+  
 
     try {
-      const response = await fetch("http://localhost:5000/api/auth/register", {
+      dispatch(setLoading(true));
+      const response = await fetch("/backend/auth/signup", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -53,7 +54,7 @@ const RestaurantSignUp = () => {
       if (!response.ok) {
         throw new Error(data.message || "Registration failed");
       }
-
+      dispatch(setLoading(false));
       dispatch(setUser(data));
       navigate("/signin");
     } catch (err) {
@@ -113,7 +114,7 @@ const RestaurantSignUp = () => {
           className="w-full bg-pink-500 text-white py-3 rounded-lg"
           disabled={loading}
         >
-          {loading ? "Registering..." : "Register"}
+          { "Register"}
         </button>
         {error && <p className="text-red-500 mt-2">{error}</p>}
       </form>

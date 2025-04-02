@@ -2,33 +2,66 @@ import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 
 const RestaurantDashboard = () => {
-  const { currentUser } = useSelector((state) => state.user);
+  const currentUser = useSelector((state) => state.user.user);
+  console.log("Restaurant User:", currentUser);
+
   const [formData, setFormData] = useState({
-    foodName: "",
+    name: "",
     ingredients: "",
     type: "Vegetarian",
     quantity: 1,
   });
 
   const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
+  const token = currentUser?.token;
+  const restaurantId = currentUser.user._id;
+  console.log("id is",restaurantId)
+
+  // 🔹 Fetch Restaurant Orders
   useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        const response = await fetch(`http://localhost:5000/api/orders/${currentUser._id}`);
-        const data = await response.json();
-        setOrders(data);
-      } catch (error) {
-        console.error("Error fetching orders:", error);
-      }
-    };
-    fetchOrders();
-  }, [currentUser._id]);
+    if (restaurantId) {
+      fetchRestaurantOrders();
+      const interval = setInterval(() => {
+        fetchRestaurantOrders();
+      }, 5000); // Refresh every 5 seconds
 
+      return () => clearInterval(interval);
+    }
+  }, [restaurantId]);
+
+  const fetchRestaurantOrders = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch(`/backend/food/history/${restaurantId}`, {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await response.json();
+      console.log("Fetched Orders:", data); // Debugging logs
+
+      if (!response.ok) throw new Error(data.message || "Failed to fetch orders");
+
+      setOrders(data);
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 🔹 Handle Food Form Input
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // 🔹 Quantity Adjustment
   const handleQuantityChange = (amount) => {
     setFormData((prev) => ({
       ...prev,
@@ -36,28 +69,44 @@ const RestaurantDashboard = () => {
     }));
   };
 
+  // 🔹 Submit Food Item
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log("Submitting Food:", formData);
+
+    if (!currentUser) {
+      alert("User not authenticated.");
+      return;
+    }
+
     try {
-      const response = await fetch("http://localhost:5000/api/food/add", {
+      const response = await fetch("/backend/food/add", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...formData, restaurantId: currentUser._id }),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+        body: JSON.stringify({ ...formData, restaurantId }),
       });
 
       const data = await response.json();
+      console.log("API Response:", data);
       if (!response.ok) throw new Error(data.message || "Failed to add food");
-      
+
       alert("Food item added successfully!");
+      fetchRestaurantOrders(); // Refresh order list
     } catch (err) {
       console.error("Error:", err.message);
+      alert(err.message);
     }
   };
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="bg-white shadow-lg p-6 rounded-lg">
-        <h1 className="text-3xl font-bold text-pink-600 text-center">{currentUser?.name} Dashboard</h1>
+        <h1 className="text-3xl font-bold text-pink-600 text-center">
+          {currentUser?.name} Dashboard
+        </h1>
       </div>
 
       {/* Add Food Form */}
@@ -66,9 +115,9 @@ const RestaurantDashboard = () => {
         <form onSubmit={handleSubmit}>
           <input
             type="text"
-            name="foodName"
+            name="name"
             placeholder="Food Name"
-            value={formData.foodName}
+            value={formData.name}
             onChange={handleChange}
             className="border p-2 w-full rounded mb-4"
             required
@@ -118,13 +167,17 @@ const RestaurantDashboard = () => {
       {/* Current Orders */}
       <div className="mt-6 bg-white shadow-lg p-6 rounded-lg max-w-3xl mx-auto">
         <h2 className="text-2xl font-semibold text-gray-700 mb-4">Current Orders</h2>
-        {orders.length > 0 ? (
+        {loading ? (
+          <p className="text-gray-500">Loading orders...</p>
+        ) : error ? (
+          <p className="text-red-500">{error}</p>
+        ) : orders.length > 0 ? (
           <ul>
             {orders.map((order) => (
               <li key={order._id} className="border p-4 rounded-lg mb-3">
-                <h3 className="text-lg font-bold">{order.foodName}</h3>
+                <h3 className="text-lg font-bold">{order.name}</h3>
                 <p>Quantity: {order.quantity}</p>
-                <p>Ordered by: {order.ngoName}</p>
+                <p>Ordered by: {order.ngo?.name || "Unknown"}</p>
               </li>
             ))}
           </ul>

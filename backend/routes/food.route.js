@@ -1,0 +1,18 @@
+import express from "express";
+import { addFood, getAllFood, bookFood,getBookedOrdersForNgo, getRestaurantOrders } from "../controllers/foodContollers.js";
+import { authenticateUser, authorizeRole } from "../middlewares/authMiddleware.js";
+
+const router = express.Router();
+
+// ✅ Restaurant adds food (Only for restaurants)
+router.post("/add", authenticateUser, authorizeRole("restaurant"), addFood);
+
+// ✅ NGO fetches available food items
+router.get("/all", authenticateUser, authorizeRole("ngo"), getAllFood);
+
+// ✅ NGO books food items
+router.post("/book/:foodId", authenticateUser, authorizeRole("ngo"), bookFood);
+//router.get("/ngo/orders/:ngoId", verifyToken, getBookedOrdersForNgo);
+router.get("/orders/:ngoId", authenticateUser, authorizeRole("ngo"), getBookedOrdersForNgo);
+router.get("/history/:restauarntId",authenticateUser, authorizeRole("restaurant"),getRestaurantOrders )
+export default router;

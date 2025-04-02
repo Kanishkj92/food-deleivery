@@ -1,7 +1,7 @@
 import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
-  user: null,
+  currentUser: null,
   loading: false,
   error: null,
 };
@@ -11,6 +11,7 @@ const userSlice = createSlice({
   initialState,
   reducers: {
     setUser: (state, action) => {
+      console.log("Redux setUser Payload:", action.payload);
       state.user = action.payload;
       state.loading = false;
       state.error = null;
