@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { setUser, setLoading, setError } from "../redux/user/userSlice";
+import { setUser, setLoading, setError } from "../redux/user/userSlice.js";
 import { useNavigate } from "react-router-dom";
 
 const SignIn = () => {
