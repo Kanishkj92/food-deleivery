@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { setUser, setLoading, setError } from "../redux/user/userSlice.js";
+import { setUser, setLoading, setError } from "../redux/user/userslice.js";
 import { useNavigate, useLocation } from "react-router-dom";
 
 const RestaurantSignUp = () => {
