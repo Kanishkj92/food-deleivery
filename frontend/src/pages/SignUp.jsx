@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 const SignUp = () => {
   const navigate = useNavigate();
@@ -55,7 +56,14 @@ const SignUp = () => {
         <button type="submit" className="bg-pink-500 text-white py-3 w-full rounded hover:bg-pink-600">
           Next →
         </button>
+        <div className='flex gap-2 mt-5'>
+        <p>Have an account?</p>
+        <Link to={"/signin"}>
+           <span className='text-blue-700'>Sign In</span>
+        </Link>
+      </div>
       </form>
+      
     </div>
   );
 };

@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 
 const RestaurantDashboard = () => {
   const currentUser = useSelector((state) => state.user.user);
+  const navigate=useNavigate();
   console.log("Restaurant User:", currentUser);
 
   const [formData, setFormData] = useState({
@@ -31,7 +33,11 @@ const RestaurantDashboard = () => {
       return () => clearInterval(interval);
     }
   }, [restaurantId]);
-
+  const handleLogout = () => {
+    //   dispatch(logout()); // Clear user state
+     //  localStorage.removeItem("user"); // Remove from local storage
+       navigate("/signin"); // Redirect to Sign In
+     };
   const fetchRestaurantOrders = async () => {
     try {
       setLoading(true);
@@ -105,8 +111,12 @@ const RestaurantDashboard = () => {
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="bg-white shadow-lg p-6 rounded-lg">
         <h1 className="text-3xl font-bold text-pink-600 text-center">
-          {currentUser?.name} Dashboard
+          {currentUser.user?.name} Dashboard
         </h1>
+        <div className="flex justify-between mt-5">
+      
+        <span onClick={handleLogout} className='text-red-700 cursor-pointer '>Sign Out</span>
+      </div>
       </div>
 
       {/* Add Food Form */}

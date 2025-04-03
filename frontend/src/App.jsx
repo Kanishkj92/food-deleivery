@@ -46,7 +46,7 @@ const App = () => {
 />
 
         {/* Redirect to SignIn if route not found */}
-        <Route path="*" element={<Navigate to="/" />} />
+   
       </Routes>
     </Router>
   );

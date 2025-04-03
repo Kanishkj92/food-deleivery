@@ -1,15 +1,23 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
+import { logout } from "../redux/user/userSlice";
+import { useNavigate } from "react-router-dom";
 
 const NgoDashboard = () => {
   const [foodItems, setFoodItems] = useState([]);
   const [bookedOrders, setBookedOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const navigate=useNavigate()
   
   const user = useSelector((state) => state.user.user); // Get logged-in user
   const token = user?.token;
   console.log("hii",user.user._id)
+  const handleLogout = () => {
+ //   dispatch(logout()); // Clear user state
+  //  localStorage.removeItem("user"); // Remove from local storage
+    navigate("/signin"); // Redirect to Sign In
+  };
   useEffect(() => {
     fetchFoodItems();
     fetchBookedOrders();
@@ -93,6 +101,10 @@ const NgoDashboard = () => {
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <h1 className="text-3xl font-bold text-center text-green-600 mb-6">NGO Dashboard</h1>
+      <div className="flex justify-between mt-5">
+      
+        <span onClick={handleLogout} className='text-red-700 cursor-pointer '>Sign Out</span>
+      </div>
 
       {error && <p className="text-red-500 text-center">{error}</p>}
 
