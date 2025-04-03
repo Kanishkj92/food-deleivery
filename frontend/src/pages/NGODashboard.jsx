@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { logout } from "../redux/user/userSlice";
+
 import { useNavigate } from "react-router-dom";
 
 const NgoDashboard = () => {
