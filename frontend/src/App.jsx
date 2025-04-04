@@ -7,6 +7,7 @@ import SignIn from "./pages/SignIn";
 import RestaurantDashboard from "./pages/RestaurantDashboard";
 import NgoDashboard from "./pages/NGODashboard";
 import { useEffect } from "react";
+import ForgotPassword from './components/forgotpassword.jsx'
 //import NgoDashboard from "./pages/NgoDashboard";
 
 const App = () => {
@@ -27,6 +28,7 @@ const App = () => {
         <Route path="/signup/restaurant" element={<RestaurantSignUp />} />
         <Route path="/signup/ngo" element={<NgoSignUp />} />
         <Route path="/signin" element={<SignIn />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
 
         <Route path="/dashboard/restaurant" element={
         user && user.user.userType

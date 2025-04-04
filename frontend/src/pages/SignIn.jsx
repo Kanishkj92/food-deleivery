@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { setUser, setLoading, setError } from "../redux/user/userslice.js";
 import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 
 const SignIn = () => {
   const [formData, setFormData] = useState({
@@ -82,6 +83,11 @@ const SignIn = () => {
           {loading ? "Signing in..." : "Sign In"}
         </button>
         {error && <p className="text-red-500 mt-2">{error}</p>}
+        <p className="text-sm text-gray-500">
+  <Link to="/forgot-password" className="text-blue-500 hover:underline ">
+    Forgot Password?
+  </Link>
+</p>
       </form>
     </div>
   );
