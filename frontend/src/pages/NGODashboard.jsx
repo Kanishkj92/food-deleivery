@@ -114,25 +114,25 @@ const NgoDashboard = () => {
 
   const canCancel = (orderTime) => {
     if (!orderTime) return false;
-  
+
     const now = new Date();
     const createdAt = new Date(orderTime);
-  
-    console.log("Now:", now.toISOString());
-    console.log("Created At:", createdAt.toISOString());
-  
     const diffInSeconds = (now - createdAt) / 1000;
-    console.log("Diff in seconds:", diffInSeconds);
-  
+
     return diffInSeconds <= 60;
   };
-  
+
+  const getPickupTime = (createdAt) => {
+    const pickup = new Date(createdAt);
+    pickup.setHours(pickup.getHours() + 1);
+    return pickup.toLocaleString();
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
       <h1 className="text-3xl font-bold text-center text-green-600 mb-6">NGO Dashboard</h1>
       <div className="flex justify-between mt-5">
-        <span onClick={handleLogout} className='text-red-700 cursor-pointer '>Sign Out</span>
+        <span onClick={handleLogout} className='text-red-700 cursor-pointer'>Sign Out</span>
       </div>
 
       {error && <p className="text-red-500 text-center">{error}</p>}
@@ -164,18 +164,17 @@ const NgoDashboard = () => {
 
       {/* Booked Orders Section */}
       <h2 className="text-2xl font-bold text-gray-800 mt-10 mb-4">Your Booked Orders</h2>
-      {error && <p className="text-red-500">{error}</p>}
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {Array.isArray(bookedOrders) && bookedOrders.length > 0 ? (
           bookedOrders.map((orders, index) => (
             <div key={index} className="bg-white p-6 rounded-lg shadow-md">
               <h2 className="text-xl font-bold text-gray-800">{orders?.name || "No Name Available"}</h2>
-              <p className="text-gray-600"><b>Type:</b> {orders?.restaurant?.name || "N/A"}</p>
+              <p className="text-gray-600"><b>Restaurant:</b> {orders?.restaurant?.name || "N/A"}</p>
               <p className="text-gray-600"><b>Ingredients:</b> {orders?.ingredients || "N/A"}</p>
               <p className="text-gray-600"><b>Type:</b> {orders?.type || "N/A"}</p>
               <p className="text-gray-600"><b>Quantity:</b> {orders?.quantity || "N/A"}</p>
               <p className="text-gray-600"><b>Status:</b> {orders?.status || "N/A"}</p>
+              <p className="text-gray-600"><b>Pickup By:</b> {getPickupTime(orders?.updatedAt)}</p>
 
               {canCancel(orders.updatedAt) && (
                 <button 
