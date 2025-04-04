@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 
 const RestaurantDashboard = () => {
   const currentUser = useSelector((state) => state.user.user);
-  const navigate=useNavigate();
+  const navigate = useNavigate();
   console.log("Restaurant User:", currentUser);
 
   const [formData, setFormData] = useState({
@@ -15,29 +15,29 @@ const RestaurantDashboard = () => {
   });
 
   const [orders, setOrders] = useState([]);
+  const [pastOrders, setPastOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
   const token = currentUser?.token;
   const restaurantId = currentUser.user._id;
-  console.log("id is",restaurantId)
+  console.log("id is", restaurantId);
 
-  // 🔹 Fetch Restaurant Orders
   useEffect(() => {
     if (restaurantId) {
       fetchRestaurantOrders();
       const interval = setInterval(() => {
         fetchRestaurantOrders();
-      }, 5000); // Refresh every 5 seconds
+      }, 5000);
 
       return () => clearInterval(interval);
     }
   }, [restaurantId]);
+
   const handleLogout = () => {
-    //   dispatch(logout()); // Clear user state
-     //  localStorage.removeItem("user"); // Remove from local storage
-       navigate("/signin"); // Redirect to Sign In
-     };
+    navigate("/signin");
+  };
+
   const fetchRestaurantOrders = async () => {
     try {
       setLoading(true);
@@ -50,11 +50,26 @@ const RestaurantDashboard = () => {
       });
 
       const data = await response.json();
-      console.log("Fetched Orders:", data); // Debugging logs
+      console.log("Fetched Orders:", data);
 
       if (!response.ok) throw new Error(data.message || "Failed to fetch orders");
 
-      setOrders(data);
+      const now = new Date();
+      const current = [];
+      const past = [];
+
+      data.forEach(order => {
+        const createdTime = new Date(order.createdAt);
+        const pickupDeadline = new Date(createdTime.getTime() + 60 * 60 * 1000);
+        if (pickupDeadline > now) {
+          current.push(order);
+        } else {
+          past.push(order);
+        }
+      });
+
+      setOrders(current);
+      setPastOrders(past);
     } catch (error) {
       setError(error.message);
     } finally {
@@ -62,12 +77,10 @@ const RestaurantDashboard = () => {
     }
   };
 
-  // 🔹 Handle Food Form Input
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // 🔹 Quantity Adjustment
   const handleQuantityChange = (amount) => {
     setFormData((prev) => ({
       ...prev,
@@ -75,7 +88,6 @@ const RestaurantDashboard = () => {
     }));
   };
 
-  // 🔹 Submit Food Item
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("Submitting Food:", formData);
@@ -100,11 +112,17 @@ const RestaurantDashboard = () => {
       if (!response.ok) throw new Error(data.message || "Failed to add food");
 
       alert("Food item added successfully!");
-      fetchRestaurantOrders(); // Refresh order list
+      fetchRestaurantOrders();
     } catch (err) {
       console.error("Error:", err.message);
       alert(err.message);
     }
+  };
+
+  const getPickupTime = (createdAt) => {
+    const pickupDate = new Date(new Date(createdAt).getTime() + 60 * 60 * 1000);
+    console.log("pickup at ",pickupDate)
+    return pickupDate.toLocaleString();
   };
 
   return (
@@ -114,9 +132,8 @@ const RestaurantDashboard = () => {
           {currentUser.user?.name} Dashboard
         </h1>
         <div className="flex justify-between mt-5">
-      
-        <span onClick={handleLogout} className='text-red-700 cursor-pointer '>Sign Out</span>
-      </div>
+          <span onClick={handleLogout} className='text-red-700 cursor-pointer'>Sign Out</span>
+        </div>
       </div>
 
       {/* Add Food Form */}
@@ -188,11 +205,31 @@ const RestaurantDashboard = () => {
                 <h3 className="text-lg font-bold">{order.name}</h3>
                 <p>Quantity: {order.quantity}</p>
                 <p>Ordered by: {order.ngo?.name || "Unknown"}</p>
+                <p>Pickup Time: {getPickupTime(order.updatedAt)}</p>
               </li>
             ))}
           </ul>
         ) : (
           <p className="text-gray-500">No current orders.</p>
+        )}
+      </div>
+
+      {/* Past Orders */}
+      <div className="mt-6 bg-white shadow-lg p-6 rounded-lg max-w-3xl mx-auto">
+        <h2 className="text-2xl font-semibold text-gray-700 mb-4">Past Orders</h2>
+        {pastOrders.length > 0 ? (
+          <ul>
+            {pastOrders.map((order) => (
+              <li key={order._id} className="border p-4 rounded-lg mb-3 bg-gray-50">
+                <h3 className="text-lg font-bold">{order.name}</h3>
+                <p>Quantity: {order.quantity}</p>
+                <p>Ordered by: {order.ngo?.name || "Unknown"}</p>
+                <p>Picked At: {getPickupTime(order.createdAt)}</p>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-gray-500">No past orders.</p>
         )}
       </div>
     </div>

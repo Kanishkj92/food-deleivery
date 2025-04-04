@@ -7,6 +7,7 @@ const UserSchema = new mongoose.Schema(
     password: { type: String, required: true },
     phone: { type: String, required: true },
     userType: { type: String, enum: ["restaurant", "ngo"], required: true },
+    address: { type: String },
     gstNumber: {
       type: String,
       required: function () {

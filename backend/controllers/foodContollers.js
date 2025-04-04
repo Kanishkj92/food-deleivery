@@ -106,3 +106,26 @@ export const getBookedOrdersForNgo = async (req, res) => {
   }
 };
 
+
+
+// Cancel Order
+export const cancelFoodOrder = async (req, res) => {
+  const foodId = req.params.id;
+
+  try {
+    const foodItem = await Food.findById(foodId);
+    if (!foodItem) return res.status(404).json({ message: "Food item not found" });
+
+    // Reset status and remove NGO booking
+    foodItem.status = "available";
+    foodItem.ngo = null;
+
+    await foodItem.save();
+
+    res.json({ message: "Order cancelled and made available again." });
+  } catch (error) {
+    console.error("Error cancelling food order:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
