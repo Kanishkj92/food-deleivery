@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import {logout} from '../redux/user/userslice.js'
 
 const NgoDashboard = () => {
   const [foodItems, setFoodItems] = useState([]);
@@ -8,13 +10,14 @@ const NgoDashboard = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
-
+  const dispatch=useDispatch()
   const user = useSelector((state) => state.user.user);
   const token = user?.token;
 
   const handleLogout = () => {
-    navigate("/signin");
-  };
+      dispatch(logout());
+      navigate("/signin");
+    };
 
   useEffect(() => {
     fetchFoodItems();

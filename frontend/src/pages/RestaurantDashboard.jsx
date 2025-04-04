@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import {logout} from '../redux/user/userslice.js'
 
 const RestaurantDashboard = () => {
   const currentUser = useSelector((state) => state.user.user);
@@ -18,7 +20,7 @@ const RestaurantDashboard = () => {
   const [pastOrders, setPastOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
+  const dispatch=useDispatch();
   const token = currentUser?.token;
   const restaurantId = currentUser.user._id;
   console.log("id is", restaurantId);
@@ -35,6 +37,7 @@ const RestaurantDashboard = () => {
   }, [restaurantId]);
 
   const handleLogout = () => {
+    dispatch(logout());
     navigate("/signin");
   };
 
