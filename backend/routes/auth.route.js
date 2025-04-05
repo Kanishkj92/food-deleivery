@@ -6,13 +6,7 @@ const router = express.Router();
 
 router.post('/signup', register);
 router.post('/login', login);
-
-
-
-// Route to send OTP to user email
 router.post("/send-otp", sendOtp);
-
-// Route to verify OTP and reset password
 router.post("/reset-password", resetPassword);
 
 export default router;

@@ -4,11 +4,10 @@ const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [newPassword, setNewPassword] = useState("");
-  const [step, setStep] = useState(1); // Track step: 1 = Send OTP, 2 = Verify OTP & Reset Password
+  const [step, setStep] = useState(1); 
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
-  // 🔹 Step 1: Send OTP
   const sendOtp = async () => {
     setLoading(true);
     setMessage("");
@@ -29,8 +28,6 @@ const ForgotPassword = () => {
     }
     setLoading(false);
   };
-
-  // 🔹 Step 2: Verify OTP & Reset Password
   const resetPassword = async () => {
     setLoading(true);
     setMessage("");

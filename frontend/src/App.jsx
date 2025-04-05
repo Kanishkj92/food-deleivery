@@ -11,12 +11,12 @@ import ForgotPassword from './components/forgotpassword.jsx'
 //import NgoDashboard from "./pages/NgoDashboard";
 
 const App = () => {
-  // Fetch the current user from Redux store
+  
   const user = useSelector((state) => state.user.user);
   console.log(user)
   useEffect(() => {
     console.log('User state:', user); 
-   // Log the user state on each render
+  
   }, [user]);
 
 
@@ -47,7 +47,6 @@ const App = () => {
   }
 />
 
-        {/* Redirect to SignIn if route not found */}
    
       </Routes>
     </Router>

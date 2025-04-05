@@ -58,7 +58,6 @@ export const login = async (req, res) => {
 
 const otpStorage = {};
 
-// 🔹 Step 1: Send OTP to User Email
 export const sendOtp = async (req, res) => {
   const { email } = req.body;
   console.log("Received email:", email);
@@ -66,22 +65,21 @@ export const sendOtp = async (req, res) => {
   const user = await User.findOne({ email });
   if (!user) return res.status(404).json({ message: "User not found" });
 
-  const otp = Math.floor(100000 + Math.random() * 900000); // Generate 6-digit OTP
-  otpStorage[email] = otp; // Store OTP temporarily
+  const otp = Math.floor(100000 + Math.random() * 900000); 
+  otpStorage[email] = otp; 
   console.log("Generated OTP:", otp);
 
-  // Configure Nodemailer
+  
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
-      user: process.env.EMAIL_USER, // Your email
-      pass: process.env.EMAIL_PASS, // Your email password
+      user: process.env.EMAIL_USER, 
+      pass: process.env.EMAIL_PASS, 
     },
 
 
   });
 
-  // Send OTP email
   const mailOptions = {
     from: "kanishkj014@gmail.com",
     to: email,
@@ -100,7 +98,6 @@ export const sendOtp = async (req, res) => {
   });
 };
 
-// 🔹 Step 2: Verify OTP and Reset Password
 export const resetPassword = async (req, res) => {
   const { email, otp, newPassword } = req.body;
 
@@ -111,7 +108,7 @@ export const resetPassword = async (req, res) => {
   const hashedPassword = await bcrypt.hash(newPassword, 10);
   await User.findOneAndUpdate({ email }, { password: hashedPassword });
 
-  delete otpStorage[email]; // Clear OTP after successful reset
+  delete otpStorage[email]; 
 
   res.json({ message: "Password reset successful!" });
 };

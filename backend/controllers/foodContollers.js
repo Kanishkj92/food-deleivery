@@ -1,12 +1,14 @@
 import Food from "../models/food.model.js";
 import User from "../models/user.model.js";
+import nodemailer from 'nodemailer';
+
 import mongoose from "mongoose";
 
 export const addFood = async (req, res) => {
     try {
       const { name, ingredients, type, quantity } = req.body;
   
-      // Ensure the authenticated user is a restaurant
+     
       const restaurant = await User.findById(req.user._id);
       if (!restaurant || restaurant.userType !== "restaurant") {
         return res.status(403).json({ message: "Only restaurants can add food." });
@@ -17,10 +19,12 @@ export const addFood = async (req, res) => {
         ingredients,
         type,
         quantity,
-        restaurant: req.user._id, // Directly from authenticated user
+        restaurant: req.user._id, 
       });
   
       await newFood.save();
+    
+  
       res.status(201).json({ message: "Food added successfully", food: newFood });
     } catch (error) {
       res.status(500).json({ message: "Error adding food", error: error.message });
@@ -53,9 +57,33 @@ export const bookFood = async (req, res) => {
 
     foodItem.status = "booked";
     foodItem.ngo = ngoId;
-
+    console.log("HI",ngo.email);
     await foodItem.save();
     res.json({ message: "Food booked successfully", food: foodItem });
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: ngo.email,
+      subject: "Food Booking Confirmation",
+      text: `Dear ${ngo.name},\n\nYour booking for the food item "${foodItem.name}" has been confirmed .\nPickup within 1 hour from now .\nThank you for helping reduce food waste!\n\n- Team FoodShare`,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error("Error sending confirmation email:", error);
+      } else {
+        console.log("Confirmation email sent:", info.response);
+      }
+    });
+    
+
   } catch (error) {
     res.status(500).json({ message: "Error booking food", error: error.message });
   }
@@ -82,18 +110,15 @@ export const getRestaurantOrders = async (req, res) => {
 export const getBookedOrdersForNgo = async (req, res) => {
   try {
     const { ngoId } = req.params;
-    //console.log("Fetching booked orders for NGO ID:", ngoId); // Debug log
 
-    // Validate if the NGO exists
     const ngo = await User.findById(ngoId);
     if (!ngo || ngo.userType !== "ngo") {
       return res.status(404).json({ message: "NGO not found" });
     }
 
-    // Find booked food items for the NGO
     const bookedOrders = await Food.find({ngo: ngoId, status: "booked" })
       .populate("restaurant", "name") .populate("ngo", "name phone"); // Include restaurant name
-      // Include NGO name
+  
     //  console.log(ngo)
     if (bookedOrders.length === 0) {
       return res.status(200).json({ message: "No booked orders found", orders: [] });
@@ -106,9 +131,6 @@ export const getBookedOrdersForNgo = async (req, res) => {
   }
 };
 
-
-
-// Cancel Order
 export const cancelFoodOrder = async (req, res) => {
   const foodId = req.params.id;
 
@@ -116,7 +138,6 @@ export const cancelFoodOrder = async (req, res) => {
     const foodItem = await Food.findById(foodId);
     if (!foodItem) return res.status(404).json({ message: "Food item not found" });
 
-    // Reset status and remove NGO booking
     foodItem.status = "available";
     foodItem.ngo = null;
 

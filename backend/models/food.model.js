@@ -8,7 +8,7 @@ const FoodSchema = new mongoose.Schema(
     quantity: { type: Number, required: true, min: 1 },
     status: { type: String, enum: ["available", "booked"], default: "available" },
     restaurant: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-    ngo: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // 🆕 Added NGO reference
+    ngo: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, 
   },
   { timestamps: true }
 );

@@ -17,7 +17,6 @@ const NgoSignUp = () => {
   const location = useLocation();
   const { loading, error } = useSelector((state) => state.user);
 
-  // Get email & password from SignUp page
   useEffect(() => {
     if (location.state) {
       console.log("Received data from SignUp page:", location.state);

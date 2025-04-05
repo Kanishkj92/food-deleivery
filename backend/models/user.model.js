@@ -13,16 +13,16 @@ const UserSchema = new mongoose.Schema(
       required: function () {
         return this.userType === "restaurant";
       },
-    }, // Required for restaurants
+    }, 
     darpanId: {
       type: String,
       required: function () {
         return this.userType === "ngo";
       },
-    }, // Required for NGOs
+    },
   },
   { timestamps: true }
 );
 
 const User = mongoose.model("User", UserSchema);
-export default User; // Export as default
+export default User; 

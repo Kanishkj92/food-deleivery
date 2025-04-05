@@ -41,7 +41,6 @@ const SignIn = () => {
       dispatch(setUser(data));
       console.log("User set in Redux:", data);
 
-      // Redirect based on user type
       if (data.user.userType === "restaurant") {
         navigate("/dashboard/restaurant");
       } else if (data.user.userType === "ngo") {
