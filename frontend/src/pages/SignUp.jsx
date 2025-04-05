@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 const SignUp = () => {
   const navigate = useNavigate();
@@ -24,46 +23,59 @@ const SignUp = () => {
   };
 
   return (
-    <div className="flex items-center justify-center h-screen bg-gray-100">
-      <form onSubmit={handleSubmit} className="bg-white p-10 rounded-3xl shadow-lg w-96">
-        <h2 className="text-3xl font-bold mb-6 text-center text-pink-600">Sign Up</h2>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-200 via-white to-blue-200 px-4">
+      <form
+        onSubmit={handleSubmit}
+        className="w-full max-w-md bg-white rounded-3xl shadow-lg p-10 border border-gray-200"
+      >
+        <h2 className="text-4xl font-extrabold text-center text-pink-500 mb-8">Sign Up</h2>
+
+        <label className="block text-gray-700 font-medium mb-1">Email</label>
         <input
           type="email"
           name="email"
-          placeholder="Write your email"
+          placeholder="Enter your email"
           required
           onChange={handleChange}
-          className="border p-3 w-full rounded mb-4"
+          className="w-full px-4 py-3 mb-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-pink-300 outline-none"
         />
+
+        <label className="block text-gray-700 font-medium mb-1">Password</label>
         <input
           type="password"
           name="password"
-          placeholder="Password"
+          placeholder="Create a password"
           required
           onChange={handleChange}
-          className="border p-3 w-full rounded mb-4"
+          className="w-full px-4 py-3 mb-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-pink-300 outline-none"
         />
+
+        <label className="block text-gray-700 font-medium mb-1">Select Role</label>
         <select
           name="userType"
           required
           onChange={handleChange}
-          className="border p-3 w-full rounded mb-6"
+          className="w-full px-4 py-3 mb-6 border border-gray-300 rounded-xl focus:ring-2 focus:ring-pink-300 outline-none"
         >
           <option value="">--Select Your Type--</option>
           <option value="restaurant">Restaurant</option>
           <option value="ngo">NGO</option>
         </select>
-        <button type="submit" className="bg-pink-500 text-white py-3 w-full rounded hover:bg-pink-600">
+
+        <button
+          type="submit"
+          className="w-full bg-pink-400 hover:bg-pink-500 text-white font-semibold py-3 rounded-xl transition duration-300"
+        >
           Next →
         </button>
-        <div className='flex gap-2 mt-5'>
-        <p>Have an account?</p>
-        <Link to={"/signin"}>
-           <span className='text-blue-700'>Sign In</span>
-        </Link>
-      </div>
+
+        <div className="mt-6 text-center text-gray-600 text-sm">
+          Already have an account?{' '}
+          <Link to="/signin" className="text-blue-600 font-medium hover:underline">
+            Sign In
+          </Link>
+        </div>
       </form>
-      
     </div>
   );
 };

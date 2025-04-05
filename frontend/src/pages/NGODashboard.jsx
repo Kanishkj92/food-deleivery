@@ -1,27 +1,28 @@
 import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
-import {logout} from '../redux/user/userslice.js'
+import { logout } from '../redux/user/userslice.js';
 
 const NgoDashboard = () => {
   const [foodItems, setFoodItems] = useState([]);
   const [bookedOrders, setBookedOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const navigate = useNavigate();
-  const dispatch=useDispatch()
+
   const user = useSelector((state) => state.user.user);
   const token = user?.token;
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const handleLogout = () => {
-      dispatch(logout());
-      navigate("/signin");
-    };
+    dispatch(logout());
+    navigate("/signin");
+  };
 
   useEffect(() => {
     fetchFoodItems();
     fetchBookedOrders();
+
     const interval = setInterval(() => {
       fetchFoodItems();
       fetchBookedOrders();
@@ -32,46 +33,39 @@ const NgoDashboard = () => {
 
   const fetchFoodItems = async () => {
     try {
-      const response = await fetch("/backend/food/all", {
-        method: "GET",
+      const res = await fetch("/backend/food/all", {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       });
-      const data = await response.json();
+      const data = await res.json();
       setFoodItems(data);
-    } catch (error) {
+    } catch (err) {
       setError("Error fetching food items.");
     }
   };
 
   const fetchBookedOrders = async () => {
     try {
-      const response = await fetch(`/backend/food/orders/${user.user._id}`, {
-        method: "GET",
+      const res = await fetch(`/backend/food/orders/${user.user._id}`, {
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       });
-      const data = await response.json();
+      const data = await res.json();
       setBookedOrders(Array.isArray(data.orders) ? data.orders : []);
-    } catch (error) {
+    } catch (err) {
       setError("Error fetching booked orders.");
     }
   };
 
   const bookFood = async (foodId) => {
-    if (!user || !user.token) {
-      setError("User not authenticated. Please log in.");
-      return;
-    }
-
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`/backend/food/book/${foodId}`, {
+      const res = await fetch(`/backend/food/book/${foodId}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -83,14 +77,14 @@ const NgoDashboard = () => {
         }),
       });
 
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || "Booking failed");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Booking failed");
 
       alert("Food booked successfully!");
       fetchFoodItems();
       fetchBookedOrders();
-    } catch (error) {
-      setError(error.message || "Error booking food.");
+    } catch (err) {
+      setError(err.message || "Error booking food.");
     } finally {
       setLoading(false);
     }
@@ -98,100 +92,103 @@ const NgoDashboard = () => {
 
   const cancelBooking = async (foodId) => {
     try {
-      const response = await fetch(`/backend/food/cancel/${foodId}`, {
+      const res = await fetch(`/backend/food/cancel/${foodId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
       });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || "Cancel failed");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Cancel failed");
+
       alert("Order cancelled successfully");
       fetchFoodItems();
       fetchBookedOrders();
-    } catch (error) {
-      setError(error.message || "Error cancelling order.");
+    } catch (err) {
+      setError(err.message || "Error cancelling order.");
     }
   };
 
   const canCancel = (orderTime) => {
-    if (!orderTime) return false;
-
     const now = new Date();
     const createdAt = new Date(orderTime);
-    const diffInSeconds = (now - createdAt) / 1000;
-
-    return diffInSeconds <= 60;
+    return (now - createdAt) / 1000 <= 60;
   };
 
   const getPickupTime = (createdAt) => {
-    const pickup = new Date(createdAt);
-    pickup.setHours(pickup.getHours() + 1);
+    const pickup = new Date(new Date(createdAt).getTime() + 60 * 60 * 1000);
     return pickup.toLocaleString();
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6">
-      <h1 className="text-3xl font-bold text-center text-green-600 mb-6">NGO Dashboard</h1>
-      <div className="flex justify-between mt-5">
-        <span onClick={handleLogout} className='text-red-700 cursor-pointer'>Sign Out</span>
-      </div>
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-extrabold text-green-600">NGO Dashboard</h1>
+          <button onClick={handleLogout} className="text-red-600 font-semibold hover:underline">
+            Sign Out
+          </button>
+        </div>
 
-      {error && <p className="text-red-500 text-center">{error}</p>}
+        {error && <p className="text-red-500 text-center">{error}</p>}
 
-      {/* Available Food Section */}
-      <h2 className="text-2xl font-bold text-gray-800 mb-4">Available Food</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {foodItems.length > 0 ? (
-          foodItems.map((food) => (
-            <div key={food._id} className="bg-white p-6 rounded-lg shadow-md">
-              <h2 className="text-xl font-bold text-gray-800">{food.name}</h2>
-              <p className="text-gray-600"><b>Ingredients:</b> {food.ingredients}</p>
-              <p className="text-gray-600"><b>Type:</b> {food.type}</p>
-              <p className="text-gray-600"><b>Quantity:</b> {food.quantity}</p>
+        {/* Available Food Section */}
+        <section className="mb-10">
+          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Available Food</h2>
+          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            {foodItems.length > 0 ? (
+              foodItems.map((food) => (
+                <div key={food._id} className="bg-white rounded-xl shadow p-5 transition hover:shadow-lg">
+                  <h3 className="text-xl font-bold text-gray-700">{food.name}</h3>
+                  <p className="text-sm text-gray-600 mt-1">Ingredients: {food.ingredients}</p>
+                  <p className="text-sm text-gray-600">Type: {food.type}</p>
+                  <p className="text-sm text-gray-600 mb-4">Quantity: {food.quantity}</p>
+                  <button
+                    onClick={() => bookFood(food._id)}
+                    disabled={loading}
+                    className="bg-green-500 hover:bg-green-600 text-white w-full py-2 rounded transition"
+                  >
+                    {loading ? "Booking..." : "Book Now"}
+                  </button>
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-500 col-span-3 text-center">No available food items.</p>
+            )}
+          </div>
+        </section>
 
-              <button 
-                onClick={() => bookFood(food._id)}
-                disabled={loading}
-                className="mt-4 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 w-full"
-              >
-                {loading ? "Booking..." : "Book Now"}
-              </button>
-            </div>
-          ))
-        ) : (
-          <p className="text-center text-gray-500 col-span-3">No available food items.</p>
-        )}
-      </div>
+        {/* Booked Orders Section */}
+        <section>
+          <h2 className="text-2xl font-semibold text-gray-800 mb-4">Your Booked Orders</h2>
+          <div className="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+            {bookedOrders.length > 0 ? (
+              bookedOrders.map((order) => (
+                <div key={order._id} className="bg-white rounded-xl shadow p-5 transition hover:shadow-lg">
+                  <h3 className="text-xl font-bold text-gray-700">{order.name}</h3>
+                  <p className="text-sm text-gray-600">Restaurant: {order?.restaurant?.name || "N/A"}</p>
+                  <p className="text-sm text-gray-600">Ingredients: {order.ingredients}</p>
+                  <p className="text-sm text-gray-600">Type: {order.type}</p>
+                  <p className="text-sm text-gray-600">Quantity: {order.quantity}</p>
+                  <p className="text-sm text-gray-600">Status: {order.status}</p>
+                  <p className="text-sm text-gray-600 mb-4">Pickup By: {getPickupTime(order.updatedAt)}</p>
 
-      {/* Booked Orders Section */}
-      <h2 className="text-2xl font-bold text-gray-800 mt-10 mb-4">Your Booked Orders</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {Array.isArray(bookedOrders) && bookedOrders.length > 0 ? (
-          bookedOrders.map((orders, index) => (
-            <div key={index} className="bg-white p-6 rounded-lg shadow-md">
-              <h2 className="text-xl font-bold text-gray-800">{orders?.name || "No Name Available"}</h2>
-              <p className="text-gray-600"><b>Restaurant:</b> {orders?.restaurant?.name || "N/A"}</p>
-              <p className="text-gray-600"><b>Ingredients:</b> {orders?.ingredients || "N/A"}</p>
-              <p className="text-gray-600"><b>Type:</b> {orders?.type || "N/A"}</p>
-              <p className="text-gray-600"><b>Quantity:</b> {orders?.quantity || "N/A"}</p>
-              <p className="text-gray-600"><b>Status:</b> {orders?.status || "N/A"}</p>
-              <p className="text-gray-600"><b>Pickup By:</b> {getPickupTime(orders?.updatedAt)}</p>
-
-              {canCancel(orders.updatedAt) && (
-                <button 
-                  onClick={() => cancelBooking(orders._id)}
-                  className="mt-4 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 w-full"
-                >
-                  Cancel Order
-                </button>
-              )}
-            </div>
-          ))
-        ) : (
-          <p className="text-center text-gray-500 col-span-3">No booked orders found.</p>
-        )}
+                  {canCancel(order.updatedAt) && (
+                    <button
+                      onClick={() => cancelBooking(order._id)}
+                      className="bg-red-500 hover:bg-red-600 text-white w-full py-2 rounded transition"
+                    >
+                      Cancel Order
+                    </button>
+                  )}
+                </div>
+              ))
+            ) : (
+              <p className="text-gray-500 col-span-3 text-center">No booked orders found.</p>
+            )}
+          </div>
+        </section>
       </div>
     </div>
   );

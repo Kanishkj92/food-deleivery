@@ -8,6 +8,7 @@ import RestaurantDashboard from "./pages/RestaurantDashboard";
 import NgoDashboard from "./pages/NGODashboard";
 import { useEffect } from "react";
 import ForgotPassword from './components/forgotpassword.jsx'
+import FrontPage from "./pages/FrontPage.jsx";
 //import NgoDashboard from "./pages/NgoDashboard";
 
 const App = () => {
@@ -24,7 +25,8 @@ const App = () => {
     <Router>
       <Routes>
         {/* Public Routes */}
-        <Route path="/" element={<SignUp />} />
+        <Route path="/" element={<FrontPage />} />
+        <Route path="/signup" element={<SignUp />} />
         <Route path="/signup/restaurant" element={<RestaurantSignUp />} />
         <Route path="/signup/ngo" element={<NgoSignUp />} />
         <Route path="/signin" element={<SignIn />} />

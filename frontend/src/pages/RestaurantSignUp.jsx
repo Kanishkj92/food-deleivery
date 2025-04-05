@@ -19,24 +19,20 @@ const RestaurantSignUp = () => {
 
   useEffect(() => {
     if (location.state) {
-      console.log("Received data from SignUp page:", location.state);
       setFormData((prev) => ({
         ...prev,
         email: location.state.email,
         password: location.state.password,
       }));
-    } else {
-      console.log("No data received from SignUp page");
     }
   }, [location.state]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
-  console.log(formData);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-  
 
     try {
       dispatch(setLoading(true));
@@ -53,6 +49,7 @@ const RestaurantSignUp = () => {
       if (!response.ok) {
         throw new Error(data.message || "Registration failed");
       }
+
       dispatch(setLoading(false));
       dispatch(setUser(data));
       navigate("/signin");
@@ -62,60 +59,72 @@ const RestaurantSignUp = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-      <h1 className="text-3xl font-bold text-pink-500">Sign Up as Restaurant</h1>
-      <form className="bg-white p-8 rounded-lg shadow-md w-96 mt-6" onSubmit={handleSubmit}>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-200 via-white to-blue-200 px-4">
+      <form
+        onSubmit={handleSubmit}
+        className="w-full max-w-md bg-white rounded-3xl shadow-lg p-10 border border-gray-200"
+      >
+        <h2 className="text-3xl font-extrabold text-center text-pink-500 mb-8">
+          Sign Up as Restaurant
+        </h2>
+
         <input
           type="email"
           name="email"
           placeholder="Email"
           value={formData.email}
-          className="w-full border p-2 mb-4 rounded"
           disabled
+          className="w-full px-4 py-3 mb-4 border border-gray-300 rounded-xl bg-gray-100 text-gray-500"
         />
+
         <input
           type="password"
           name="password"
           placeholder="Password"
           value={formData.password}
-          className="w-full border p-2 mb-4 rounded"
           disabled
+          className="w-full px-4 py-3 mb-4 border border-gray-300 rounded-xl bg-gray-100 text-gray-500"
         />
+
         <input
           type="text"
           name="name"
           placeholder="Restaurant Name"
           value={formData.name}
           onChange={handleChange}
-          className="w-full border p-2 mb-4 rounded"
+          className="w-full px-4 py-3 mb-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-pink-300 outline-none"
           required
         />
+
         <input
           type="text"
           name="phone"
-          placeholder="Restaurant Phone No."
+          placeholder="Phone Number"
           value={formData.phone}
           onChange={handleChange}
-          className="w-full border p-2 mb-4 rounded"
+          className="w-full px-4 py-3 mb-4 border border-gray-300 rounded-xl focus:ring-2 focus:ring-pink-300 outline-none"
           required
         />
+
         <input
           type="text"
           name="gstNumber"
-          placeholder="Write your GST Number"
+          placeholder="GST Number"
           value={formData.gstNumber}
           onChange={handleChange}
-          className="w-full border p-2 mb-4 rounded"
+          className="w-full px-4 py-3 mb-6 border border-gray-300 rounded-xl focus:ring-2 focus:ring-pink-300 outline-none"
           required
         />
+
         <button
           type="submit"
-          className="w-full bg-pink-500 text-white py-3 rounded-lg"
+          className="w-full bg-pink-400 hover:bg-pink-500 text-white font-semibold py-3 rounded-xl transition duration-300"
           disabled={loading}
         >
-          { "Register"}
+          Register
         </button>
-        {error && <p className="text-red-500 mt-2">{error}</p>}
+
+        {error && <p className="text-red-500 mt-4 text-center">{error}</p>}
       </form>
     </div>
   );
