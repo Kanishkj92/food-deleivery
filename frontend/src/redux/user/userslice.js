@@ -17,7 +17,7 @@ const userSlice = createSlice({
       state.error = null;
     },
     setLoading: (state) => {
-      state.loading = false;
+      state.loading = true;
       state.error = null;
     },
     setError: (state, action) => {
