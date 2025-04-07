@@ -21,6 +21,9 @@ const RestaurantDashboard = () => {
   const [pastOrders, setPastOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [listings, setListings] = useState([]);
+const [showListings, setShowListings] = useState(false);
+
 
   useEffect(() => {
     if (restaurantId) {
@@ -34,6 +37,44 @@ const RestaurantDashboard = () => {
     dispatch(logout());
     navigate("/signin");
   };
+  const fetchListings = async () => {
+    try {
+      const res = await fetch(`/backend/food/listings/${restaurantId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to fetch listings");
+      setListings(data);
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+  const deleteListing = async (foodId) => {
+    try {
+      const res = await fetch(`/backend/food/delete/${foodId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+  
+      const data = await res.json();
+  
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to delete listing");
+      }
+  
+      // Update state to remove deleted listing
+      setListings((prevListings) => prevListings.filter((item) => item._id !== foodId));
+  
+      alert("Listing deleted successfully");
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+  
 
   const fetchRestaurantOrders = async () => {
     try {
@@ -52,7 +93,7 @@ const RestaurantDashboard = () => {
       const past = [];
 
       data.forEach((order) => {
-        const createdTime = new Date(order.createdAt);
+        const createdTime = new Date(order.updatedAt);
         const pickupDeadline = new Date(createdTime.getTime() + 60 * 60 * 1000);
         if (pickupDeadline > now) current.push(order);
         else past.push(order);
@@ -172,8 +213,45 @@ const RestaurantDashboard = () => {
           >
             Add Food
           </button>
+          <button
+  onClick={() => {
+    setShowListings(!showListings);
+    if (!showListings) fetchListings();
+  }}
+  className="w-full bg-purple-500 text-white font-semibold py-3 rounded-xl hover:bg-purple-600 transition mt-4"
+>
+  {showListings ? "Hide Listings" : "View Your Listings"}
+</button>
         </form>
       </div>
+      {showListings && (
+  <div className="mt-6 bg-white p-6 rounded-3xl shadow-lg max-w-6xl mx-auto">
+    <h2 className="text-2xl font-semibold text-gray-700 mb-4">Your Listings</h2>
+    {listings.length ? (
+      <ul className="space-y-4">
+        {listings.map((item) => (
+          <li key={item._id} className="p-4 border rounded-xl bg-gray-50">
+            <h3 className="text-lg font-bold text-pink-600">{item.name}</h3>
+            <p>Ingredients: {item.ingredients}</p>
+            <p>Type: {item.type}</p>
+            <p>Quantity: {item.quantity}</p>
+            <p>Status: {item.status}</p>
+            <p>Created At: {new Date(item.createdAt).toLocaleString()}</p>
+            <button
+      onClick={() => deleteListing(item._id)}
+      className="mt-2 bg-red-500 text-white px-4 py-2 rounded-xl hover:bg-red-600 transition"
+    >
+      Delete
+    </button>
+          </li>
+        ))}
+      </ul>
+    ) : (
+      <p className="text-gray-500">No listings found.</p>
+    )}
+  </div>
+)}
+
 
       {/* Current Orders */}
       <div className="bg-white p-6 rounded-3xl shadow-lg max-w-6xl mx-auto mb-8">
@@ -208,7 +286,7 @@ const RestaurantDashboard = () => {
                 <h3 className="text-lg font-bold text-gray-800">{order.name}</h3>
                 <p>Quantity: {order.quantity}</p>
                 <p>Ordered by: {order.ngo?.name || "Unknown"}</p>
-                <p>Picked At: {getPickupTime(order.createdAt)}</p>
+                <p>Picked At: {getPickupTime(order.updatedAt)}</p>
               </li>
             ))}
           </ul>

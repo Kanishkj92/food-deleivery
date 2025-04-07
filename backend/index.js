@@ -24,7 +24,7 @@ app.use("/backend/food", foodRoutes);
 setInterval(() => {
     console.log("Running cleanup...");
     deleteExpiredListings();
-  }, 30 * 60 * 1000); 
+  }, 1 * 60 * 1000); 
 app.use(express.static(path.join(__dirname,'/frontend/dist')))
 app.get('*',(req,res)=>{
     res.sendFile(path.join(__dirname,'frontend','dist','index.html'));

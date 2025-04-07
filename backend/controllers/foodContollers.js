@@ -32,6 +32,21 @@ export const addFood = async (req, res) => {
   };
   
 
+
+  export const getListingsByRestaurant = async (req, res) => {
+    try {
+      const {restaurantId} = req.params;
+
+      console.log("hellos",restaurantId)
+      const listings = await Food.find({ restaurant: restaurantId }).populate("restaurant");
+  
+      res.status(200).json(listings);
+    } catch (error) {
+      console.error("Error fetching listings:", error);
+      res.status(500).json({ message: "Server error while fetching listings." });
+    }
+  };
+
 export const getAllFood = async (req, res) => {
   try {
     const foodItems = await Food.find({ status: "available" }).populate("restaurant", "name");
@@ -83,8 +98,31 @@ export const bookFood = async (req, res) => {
       ❤️ The FoodShare Team`,
       
     };
+    const mailOption = {
+      from: process.env.EMAIL_USER,
+      to: foodItem.restaurant.email,
+      subject: "Food Booking Confirmation",
+      text: `Hello ${foodItem.restaurant.name },
+
+      Your booking for the food item "${foodItem.name}" has been successfully confirmed by ${ngo.name || "the restaurant"}.
+      
+      📞 Please reach out at: ${foodItem.restaurant?.phone || "N/A"} to coordinate pickup. Ensure pickup within 1 hour.
+      
+      Let's fight food waste together!
+      
+      ❤️ The FoodShare Team`,
+      
+    };
+
 
     transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error("Error sending confirmation email:", error);
+      } else {
+        console.log("Confirmation email sent:", info.response);
+      }
+    });
+    transporter.sendMail(mailOption, (error, info) => {
       if (error) {
         console.error("Error sending confirmation email:", error);
       } else {
@@ -171,5 +209,24 @@ export const deleteExpiredListings = async () => {
     console.log(`${result.deletedCount} expired listings deleted.`);
   } catch (error) {
     console.error("Error deleting expired listings:", error.message);
+  }
+};
+// controllers/foodController.js
+
+
+
+export const deleteFood = async (req, res) => {
+  try {
+    const foodId = req.params.id;
+    const food = await Food.findById(foodId);
+
+    if (!food) {
+      return res.status(404).json({ message: "Food item not found" });
+    }
+
+    await food.deleteOne();
+    res.status(200).json({ message: "Food item deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Server error while deleting food", error: error.message });
   }
 };
