@@ -50,7 +50,7 @@ export const bookFood = async (req, res) => {
       return res.status(404).json({ message: "NGO not found" });
     }
 
-    const foodItem = await Food.findById(foodId);
+    const foodItem = await Food.findById(foodId).populate("restaurant");
     if (!foodItem || foodItem.status !== "available") {
       return res.status(400).json({ message: "Food item is not available" });
     }
@@ -72,7 +72,16 @@ export const bookFood = async (req, res) => {
       from: process.env.EMAIL_USER,
       to: ngo.email,
       subject: "Food Booking Confirmation",
-      text: `Dear ${ngo.name},\n\nYour booking for the food item "${foodItem.name}" has been confirmed .\nPickup within 1 hour from now .\nThank you for helping reduce food waste!\n\n- Team FoodShare`,
+      text: `Hello ${ngo.name},
+
+      Your booking for the food item "${foodItem.name}" has been successfully confirmed by ${foodItem.restaurant?.name || "the restaurant"}.
+      
+      📞 Please reach out at: ${foodItem.restaurant?.phone || "N/A"} to coordinate pickup. Ensure pickup within 1 hour.
+      
+      Let's fight food waste together!
+      
+      ❤️ The FoodShare Team`,
+      
     };
 
     transporter.sendMail(mailOptions, (error, info) => {
@@ -150,3 +159,17 @@ export const cancelFoodOrder = async (req, res) => {
   }
 };
 
+export const deleteExpiredListings = async () => {
+  const twelveHoursAgo = new Date(Date.now() - 12 * 60 * 60 * 1000);
+
+  try {
+    const result = await Food.deleteMany({
+      status: "available",
+      createdAt: { $lt: twelveHoursAgo },
+    });
+
+    console.log(`${result.deletedCount} expired listings deleted.`);
+  } catch (error) {
+    console.error("Error deleting expired listings:", error.message);
+  }
+};
