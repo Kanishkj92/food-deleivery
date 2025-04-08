@@ -9,7 +9,6 @@ import NgoDashboard from "./pages/NGODashboard";
 import { useEffect } from "react";
 import ForgotPassword from './components/forgotpassword.jsx'
 import FrontPage from "./pages/FrontPage.jsx";
-//import NgoDashboard from "./pages/NgoDashboard";
 
 const App = () => {
   
@@ -17,7 +16,6 @@ const App = () => {
   console.log(user)
   useEffect(() => {
     console.log('User state:', user); 
-  
   }, [user]);
 
 

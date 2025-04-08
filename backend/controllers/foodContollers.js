@@ -191,6 +191,8 @@ export const cancelFoodOrder = async (req, res) => {
     await foodItem.save();
 
     res.json({ message: "Order cancelled and made available again." });
+    
+
   } catch (error) {
     console.error("Error cancelling food order:", error);
     res.status(500).json({ message: "Server error" });

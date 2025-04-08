@@ -11,7 +11,6 @@ router.post("/book/:foodId", authenticateUser, authorizeRole("ngo"), bookFood);
 router.get("/orders/:ngoId", authenticateUser, authorizeRole("ngo"), getBookedOrdersForNgo);
 router.get("/history/:restauarntId",authenticateUser, authorizeRole("restaurant"),getRestaurantOrders );
 router.patch("/cancel/:id", authenticateUser, authorizeRole("ngo"), cancelFoodOrder);
-// GET /backend/food/listings/:restaurantId
 router.get("/listings/:restaurantId",authenticateUser, authorizeRole("restaurant"),getListingsByRestaurant);
 router.delete("/delete/:id", authenticateUser, deleteFood);
   

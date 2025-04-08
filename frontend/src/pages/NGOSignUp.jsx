@@ -122,9 +122,10 @@ const NgoSignUp = () => {
         >
           {loading ? "Registering..." : "Register"}
         </button>
-
+        
         {error && <p className="text-red-500 mt-4 text-center">{error}</p>}
       </form>
+      
     </div>
   );
 };

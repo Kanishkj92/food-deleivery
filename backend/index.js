@@ -20,7 +20,7 @@ app.listen(4000,()=>{
     console.log('Server is running on port 4000!');
 })
 app.use('/backend/auth',userRouter)
-app.use("/backend/food", foodRoutes);
+app.use("/backend/food",foodRoutes);
 setInterval(() => {
     console.log("Running cleanup...");
     deleteExpiredListings();
