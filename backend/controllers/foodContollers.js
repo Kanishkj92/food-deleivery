@@ -65,16 +65,20 @@ export const bookFood = async (req, res) => {
       return res.status(404).json({ message: "NGO not found" });
     }
 
-    const foodItem = await Food.findById(foodId).populate("restaurant");
-    if (!foodItem || foodItem.status !== "available") {
-      return res.status(400).json({ message: "Food item is not available" });
+    // 🔒 Atomic operation: Book only if status is still 'available'
+    const foodItem = await Food.findOneAndUpdate(
+      { _id: foodId, status: "available" },
+      { $set: { status: "booked", ngo: ngoId } },
+      { new: true }
+    ).populate("restaurant");
+
+    if (!foodItem) {
+      return res.status(409).json({ message: "Food already booked by another NGO" });
     }
 
-    foodItem.status = "booked";
-    foodItem.ngo = ngoId;
-    console.log("HI",ngo.email);
-    await foodItem.save();
+    // ✅ Only send email if booking was successful
     res.json({ message: "Food booked successfully", food: foodItem });
+
     const transporter = nodemailer.createTransport({
       service: "gmail",
       auth: {
@@ -83,58 +87,60 @@ export const bookFood = async (req, res) => {
       },
     });
 
-    const mailOptions = {
+    const mailOptionsNGO = {
       from: process.env.EMAIL_USER,
       to: ngo.email,
       subject: "Food Booking Confirmation",
       text: `Hello ${ngo.name},
 
-      Your booking for the food item "${foodItem.name}" has been successfully confirmed by ${foodItem.restaurant?.name || "the restaurant"}.
-      
-      📞 Please reach out at: ${foodItem.restaurant?.phone || "N/A"} to coordinate pickup. Ensure pickup within 1 hour.
-      
-      Let's fight food waste together!
-      
-      ❤️ The FoodShare Team`,
-      
+Your booking for the food item "${foodItem.name}" has been successfully confirmed by ${foodItem.restaurant?.name || "the restaurant"}.
+
+📞 Please reach out at: ${foodItem.restaurant?.phone || "N/A"} to coordinate pickup. Ensure pickup within 1 hour.
+
+Let's fight food waste together!
+
+❤️ The FoodShare Team`,
     };
-    const mailOption = {
+
+    const mailOptionsRestaurant = {
       from: process.env.EMAIL_USER,
       to: foodItem.restaurant.email,
-      subject: "Food Booking Confirmation",
-      text: `Hello ${foodItem.restaurant.name },
+      subject: "Food Booking Confirmed",
+      text: `Hello ${foodItem.restaurant.name},
 
-      Your booking for the food item "${foodItem.name}" has been successfully confirmed by ${ngo.name || "the restaurant"}.
-      
-      📞 Please reach out at: ${foodItem.restaurant?.phone || "N/A"} to coordinate pickup. Ensure pickup within 1 hour.
-      
-      Let's fight food waste together!
-      
-      ❤️ The FoodShare Team`,
-      
+Your food item "${foodItem.name}" has been booked by ${ngo.name} (NGO).
+
+📞 NGO contact: ${ngo.phone || "N/A"}
+
+Please coordinate pickup within 1 hour.
+
+Thanks for your support!
+
+🙏 The FoodShare Team`,
     };
 
+    transporter.sendMail(mailOptionsNGO, (error, info) => {
+      if (error) {
+        console.error("Error sending NGO email:", error);
+      } else {
+        console.log("NGO confirmation sent:", info.response);
+      }
+    });
 
-    transporter.sendMail(mailOptions, (error, info) => {
+    transporter.sendMail(mailOptionsRestaurant, (error, info) => {
       if (error) {
-        console.error("Error sending confirmation email:", error);
+        console.error("Error sending restaurant email:", error);
       } else {
-        console.log("Confirmation email sent:", info.response);
+        console.log("Restaurant confirmation sent:", info.response);
       }
     });
-    transporter.sendMail(mailOption, (error, info) => {
-      if (error) {
-        console.error("Error sending confirmation email:", error);
-      } else {
-        console.log("Confirmation email sent:", info.response);
-      }
-    });
-    
 
   } catch (error) {
+    console.error("Booking error:", error);
     res.status(500).json({ message: "Error booking food", error: error.message });
   }
 };
+
 
 export const getRestaurantOrders = async (req, res) => {
   try {
@@ -177,22 +183,17 @@ export const getBookedOrdersForNgo = async (req, res) => {
     res.status(500).json({ message: "Error fetching booked orders", error: error.message });
   }
 };
-
 export const cancelFoodOrder = async (req, res) => {
   const foodId = req.params.id;
-
   try {
     const foodItem = await Food.findById(foodId);
     if (!foodItem) return res.status(404).json({ message: "Food item not found" });
 
     foodItem.status = "available";
     foodItem.ngo = null;
-
     await foodItem.save();
-
     res.json({ message: "Order cancelled and made available again." });
     
-
   } catch (error) {
     console.error("Error cancelling food order:", error);
     res.status(500).json({ message: "Server error" });
@@ -213,9 +214,6 @@ export const deleteExpiredListings = async () => {
     console.error("Error deleting expired listings:", error.message);
   }
 };
-// controllers/foodController.js
-
-
 
 export const deleteFood = async (req, res) => {
   try {
@@ -232,3 +230,59 @@ export const deleteFood = async (req, res) => {
     res.status(500).json({ message: "Server error while deleting food", error: error.message });
   }
 };
+export const generateReport = async (req, res) => {
+  try {
+    const foodData = await Food.find()
+      .populate("restaurant", "name email phone")
+      .populate("ngo", "name email phone");
+
+    if (!foodData || foodData.length === 0) {
+      return res.status(404).json({ message: "No food data available for report." });
+    }
+
+    const formattedData = foodData.map(item => ({
+      name: item.name,
+      type: item.type,
+      quantity: item.quantity,
+      status: item.status,
+      restaurant: item.restaurant?.name,
+      ngo: item.ngo?.name,
+      createdAt: item.createdAt
+    }));
+
+    const prompt = `Generate a professional NGO food donation summary report. Include: total items, booked count, available count, most active restaurant, most frequent food item.Data:${JSON.stringify(formattedData, null, 2)}`;
+
+    const llamaResponse = await fetch('http://localhost:11434/api/generate', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: "llama3.2",
+        prompt
+      })
+    });
+
+    const reader = llamaResponse.body.getReader();
+    let result = '';
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      result += Buffer.from(value).toString();
+    }
+    console.log(result);
+    // Extract response (Ollama returns streaming chunks)
+    const parsed = result.split('\n').map(line => {
+      try {
+        return JSON.parse(line).response || '';
+      } catch (e) {
+        return '';
+      }
+    }).join('');
+
+    res.status(200).json({ report: parsed.trim() });
+
+  } catch (error) {
+    console.error("LLM Report Error:", error);
+    res.status(500).json({ message: "Failed to generate report", error: error.message });
+  }
+};
+

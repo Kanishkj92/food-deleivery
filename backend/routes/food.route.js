@@ -3,6 +3,7 @@ import { addFood, getAllFood, bookFood,getBookedOrdersForNgo, getRestaurantOrder
 import { authenticateUser, authorizeRole } from "../middlewares/authMiddleware.js";
 import { getListingsByRestaurant } from "../controllers/foodContollers.js";
 import { deleteFood } from "../controllers/foodContollers.js";
+ import { generateReport } from "../controllers/foodContollers.js";
 
 const router = express.Router();
 router.post("/add", authenticateUser, authorizeRole("restaurant"), addFood);
@@ -13,7 +14,8 @@ router.get("/history/:restauarntId",authenticateUser, authorizeRole("restaurant"
 router.patch("/cancel/:id", authenticateUser, authorizeRole("ngo"), cancelFoodOrder);
 router.get("/listings/:restaurantId",authenticateUser, authorizeRole("restaurant"),getListingsByRestaurant);
 router.delete("/delete/:id", authenticateUser, deleteFood);
-  
+router.get("/report", authenticateUser, generateReport);
+
 
 
 export default router;

@@ -46,9 +46,11 @@ const App = () => {
       : <div>Loading...</div>
   }
 />
-
-   
       </Routes>
+
+      
+
+
     </Router>
   );
 };

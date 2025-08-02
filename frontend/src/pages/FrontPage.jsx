@@ -12,7 +12,7 @@ const FrontPage = () => {
           className="w-full h-64 object-cover rounded-xl mb-8"
         />
         <h1 className="text-4xl md:text-5xl font-extrabold text-pink-500 mb-4">
-          Welcome to FoodShare
+          Welcome to ZeroWaste Connect
         </h1>
         <p className="text-gray-600 text-lg md:text-xl max-w-xl mx-auto mb-6">
           A platform connecting <strong>restaurants</strong> and <strong>NGOs</strong> to reduce food waste and feed the hungry.
@@ -35,7 +35,7 @@ const FrontPage = () => {
               className="w-10 h-10"
             />
             <p className="text-gray-700 font-medium text-base sm:text-lg">
-              NGOs book and distribute food
+              NGOs collect and distribute food
             </p>
           </div>
         </div>
